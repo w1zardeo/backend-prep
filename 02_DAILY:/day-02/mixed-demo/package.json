@@ -1,0 +1,7 @@
+{
+  "name": "mixed-demo",
+  "version": "1.0.0",
+  "description": "Mixed CJS/ESM Demo",
+  "main": "app.js",
+  "type": "module"
+}
