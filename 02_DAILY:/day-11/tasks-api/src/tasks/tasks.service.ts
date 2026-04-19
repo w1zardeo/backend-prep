@@ -8,4 +8,14 @@ export class TasksService {
   findAll(): Task[] {
     return this.tasks;
   }
+
+  create(title: string, description?: string): Task {
+    const task: Task = {
+      id: Math.random().toString(36).substring(7),
+      title,
+      description: description || '',
+    };
+    this.tasks.push(task);
+    return task;
+  }
 }
