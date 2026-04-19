@@ -26,4 +26,11 @@ export class TasksService {
     this.tasks.push(task);
     return task;
   }
+
+  update(id: string, updateTaskDto: Partial<Task>): Task {
+    const task = this.findOne(id);
+    task.title = updateTaskDto.title ?? task.title;
+    task.description = updateTaskDto.description ?? task.description;
+    return task;
+  }
 }
