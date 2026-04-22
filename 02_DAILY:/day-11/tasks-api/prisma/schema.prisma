@@ -19,7 +19,7 @@ model User {
 
 model Task {
   id          Int      @id @default(autoincrement())
-  title       String
+  title       String   @unique
   description String?
   status      TaskStatus @default(OPEN)
   userId      Int

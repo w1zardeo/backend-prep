@@ -5,8 +5,32 @@ import { Task } from './task.model';
 export class TasksService {
   private tasks: Task[] = [];
 
-  findAll(): Task[] {
-    return this.tasks;
+  constructor() {
+    // Наповнюємо 25 тестовими задачами
+    for (let i = 1; i <= 25; i++) {
+      this.tasks.push({
+        id: i.toString(),
+        title: `Task ${i}`,
+        description: `Description for task ${i}`,
+      });
+    }
+  }
+
+  findAll(page: number = 1, pageSize: number = 10) {
+    const totalItems = this.tasks.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const items = this.tasks.slice(startIndex, startIndex + pageSize);
+
+    return {
+      items,
+      meta: {
+        totalItems,
+        totalPages,
+        currentPage: page,
+        pageSize,
+      },
+    };
   }
 
   findOne(id: string): Task {
@@ -29,8 +53,14 @@ export class TasksService {
 
   update(id: string, updateTaskDto: Partial<Task>): Task {
     const task = this.findOne(id);
-    task.title = updateTaskDto.title ?? task.title;
-    task.description = updateTaskDto.description ?? task.description;
+
+    if (updateTaskDto.title) {
+      task.title = updateTaskDto.title;
+    }
+    if (updateTaskDto.description) {
+      task.description = updateTaskDto.description;
+    }
+
     return task;
   }
 }

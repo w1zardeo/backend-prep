@@ -5,38 +5,42 @@ import {
   Body,
   Param,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import type { Task } from './task.model';
+import { Task } from './task.model';
 import { CreateTaskDto, UpdateTaskDto } from './dto/create-task.dto';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('tasks')
 export class TasksController {
   constructor(private tasksService: TasksService) {}
 
   @Get()
-  getAllTasks(): Task[] {
-    return this.tasksService.findAll();
+  async getAllTasks(
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+  ) {
+    return this.tasksService.findAll(Number(page), Number(pageSize));
   }
 
   @Get(':id')
-  getTaskById(@Param('id') id: string): Task {
+  async getTaskById(@Param('id') id: string): Promise<Task> {
     return this.tasksService.findOne(id);
   }
 
   @Post()
-  createTask(@Body() createTaskDto: CreateTaskDto): Task {
-    return this.tasksService.create(
-      createTaskDto.title,
-      createTaskDto.description,
-    );
+  async createTask(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
+    return this.tasksService.create(createTaskDto.title, createTaskDto.description);
   }
 
   @Patch(':id')
-  updateTask(
+  async updateTask(
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
-  ): Task {
+  ): Promise<Task> {
     return this.tasksService.update(id, updateTaskDto);
   }
 }
