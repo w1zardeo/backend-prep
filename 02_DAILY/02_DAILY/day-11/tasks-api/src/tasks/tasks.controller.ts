@@ -6,9 +6,9 @@ import {
   Param,
   Patch,
   Query,
+  Request,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { Task } from './task.model';
 import { CreateTaskDto, UpdateTaskDto } from './dto/create-task.dto';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -27,20 +27,24 @@ export class TasksController {
   }
 
   @Get(':id')
-  async getTaskById(@Param('id') id: string): Promise<Task> {
-    return this.tasksService.findOne(id);
+  async getTaskById(@Param('id') id: string) {
+    return this.tasksService.findOne(Number(id));
   }
 
   @Post()
-  async createTask(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
-    return this.tasksService.create(createTaskDto.title, createTaskDto.description);
+  async createTask(@Body() createTaskDto: CreateTaskDto, @Request() req: any) {
+    return this.tasksService.create(
+      createTaskDto.title,
+      createTaskDto.description,
+      req.user.userId,
+    );
   }
 
   @Patch(':id')
   async updateTask(
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
-  ): Promise<Task> {
-    return this.tasksService.update(id, updateTaskDto);
+  ) {
+    return this.tasksService.update(Number(id), updateTaskDto);
   }
 }
