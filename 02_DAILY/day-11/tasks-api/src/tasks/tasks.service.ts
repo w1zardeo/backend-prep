@@ -1,19 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Task } from '@prisma/client';
+import { Task, TaskStatus } from '@prisma/client';
 
 @Injectable()
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(page: number = 1, pageSize: number = 10) {
+  async findAll(page: number = 1, pageSize: number = 10, status?: TaskStatus) {
     const skip = (page - 1) * pageSize;
+    const where = status ? { status } : {};
+
     const [items, totalItems] = await Promise.all([
       this.prisma.task.findMany({
+        where,
         skip,
         take: pageSize,
       }),
-      this.prisma.task.count(),
+      this.prisma.task.count({ where }),
     ]);
 
     const totalPages = Math.ceil(totalItems / pageSize);
@@ -54,6 +57,14 @@ export class TasksService {
     return this.prisma.task.update({
       where: { id },
       data: updateTaskDto,
+    });
+  }
+
+  async updateStatus(id: number, status: TaskStatus): Promise<Task> {
+    await this.findOne(id);
+    return this.prisma.task.update({
+      where: { id },
+      data: { status },
     });
   }
 }

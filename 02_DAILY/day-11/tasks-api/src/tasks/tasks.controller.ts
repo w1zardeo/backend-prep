@@ -10,8 +10,10 @@ import {
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto, UpdateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskStatusDto } from './dto/update-task-status.dto';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { TaskStatus } from '@prisma/client';
 import {
   ApiTags,
   ApiOperation,
@@ -28,16 +30,18 @@ export class TasksController {
   constructor(private tasksService: TasksService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all tasks with pagination' })
+  @ApiOperation({ summary: 'Get all tasks with pagination and filtering' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
+  @ApiQuery({ name: 'status', required: false, enum: TaskStatus })
   @ApiResponse({ status: 200, description: 'Return all tasks.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async getAllTasks(
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
+    @Query('status') status?: TaskStatus,
   ) {
-    return this.tasksService.findAll(Number(page), Number(pageSize));
+    return this.tasksService.findAll(Number(page), Number(pageSize), status);
   }
 
   @Get(':id')
@@ -73,5 +77,21 @@ export class TasksController {
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
     return this.tasksService.update(Number(id), updateTaskDto);
+  }
+
+  @Patch(':id/status')
+  @ApiOperation({ summary: 'Update task status' })
+  @ApiResponse({ status: 200, description: 'The status has been successfully updated.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 404, description: 'Task not found.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() updateTaskStatusDto: UpdateTaskStatusDto,
+  ) {
+    return this.tasksService.updateStatus(
+      Number(id),
+      updateTaskStatusDto.status,
+    );
   }
 }

@@ -30,5 +30,5 @@ model Task {
 enum TaskStatus {
   OPEN
   IN_PROGRESS
-  DONE
+  COMPLETED
 }
