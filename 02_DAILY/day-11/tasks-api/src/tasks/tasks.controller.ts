@@ -12,13 +12,27 @@ import { TasksService } from './tasks.service';
 import { CreateTaskDto, UpdateTaskDto } from './dto/create-task.dto';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 
+@ApiTags('tasks')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('tasks')
 export class TasksController {
   constructor(private tasksService: TasksService) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get all tasks with pagination' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number })
+  @ApiResponse({ status: 200, description: 'Return all tasks.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async getAllTasks(
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
@@ -27,20 +41,33 @@ export class TasksController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get a task by ID' })
+  @ApiResponse({ status: 200, description: 'Return the task.' })
+  @ApiResponse({ status: 404, description: 'Task not found.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async getTaskById(@Param('id') id: string) {
     return this.tasksService.findOne(Number(id));
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create a new task' })
+  @ApiResponse({ status: 201, description: 'The task has been successfully created.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async createTask(@Body() createTaskDto: CreateTaskDto, @Request() req: any) {
     return this.tasksService.create(
       createTaskDto.title,
-      createTaskDto.description,
+      createTaskDto.description ?? '',
       req.user.userId,
     );
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update an existing task' })
+  @ApiResponse({ status: 200, description: 'The task has been successfully updated.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 404, description: 'Task not found.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async updateTask(
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
